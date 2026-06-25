@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1b3e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Solar Asset Tracker — Staff Portal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    :root {
+      --navy: #0d1b3e;
+      --navy-light: #1a2f5e;
+      --steel: #5b7c99;
+      --steel-dark: #46647d;
+      --bg: #f4f6fb;
+      --white: #ffffff;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --error: #dc2626;
+      --success: #16a34a;
+      --maintenance: #2c5aa0;
+      --radius: 12px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+    }
+
+    .page { display: none; min-height: 100dvh; flex-direction: column; }
+    .page.active { display: flex; }
+
+    /* Header */
+    header {
+      background: var(--navy);
+      color: var(--white);
+      padding: 16px 20px;
+      padding-top: calc(16px + env(safe-area-inset-top));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 700; }
+    header span { font-size: 0.75rem; color: var(--steel); font-weight: 500; display: block; margin-top: 2px; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    .logout-btn {
+      background: transparent;
+      border: 1.5px solid var(--steel);
+      color: var(--steel);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s;
+    }
+    .logout-btn:hover { background: var(--steel); color: var(--white); }
+
+    /* Login Page */
+    .login-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      padding-top: calc(24px + env(safe-area-inset-top));
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+      background: linear-gradient(160deg, var(--navy) 0%, var(--navy-light) 60%, #2a4080 100%);
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow);
+    }
+
+    .login-logo { text-align: center; margin-bottom: 22px; }
+    .login-logo .icon { font-size: 2.5rem; }
+    .login-logo h2 { font-size: 1.25rem; color: var(--navy); margin-top: 8px; font-weight: 700; }
+    .login-logo p { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+    /* Auth Tabs */
+    .auth-tabs {
+      display: flex;
+      background: #eef1f8;
+      border-radius: 8px;
+      padding: 4px;
+      margin-bottom: 22px;
+    }
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+      user-select: none;
+    }
+    .auth-tab.active {
+      background: var(--white);
+      color: var(--navy);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    /* Fields */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      color: var(--text);
+      background: var(--white);
+      transition: border-color 0.2s;
+      outline: none;
+      font-family: inherit;
+    }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus { border-color: var(--navy); }
+    .field textarea { resize: vertical; min-height: 70px; }
+    .field input[readonly] { background: #eef1f8; color: var(--muted); }
+
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.97rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.3px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-accent { background: var(--steel); color: var(--white); }
+    .btn-accent:hover:not(:disabled) { background: var(--steel-dark); }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--navy);
+      color: var(--navy);
+    }
+    .btn-outline:hover:not(:disabled) { background: #f1f5ff; }
+
+    /* Messages */
+    .error-msg {
+      color: var(--error);
+      font-size: 0.82rem;
+      margin-top: 10px;
+      text-align: center;
+      display: none;
+    }
+    .info-msg {
+      color: var(--steel-dark);
+      background: #eef3f7;
+      border: 1.5px solid #cdd9e2;
+      font-size: 0.82rem;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-align: center;
+      display: none;
+      line-height: 1.4;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: calc(24px + env(safe-area-inset-bottom)); left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--navy);
+      color: var(--white);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      line-height: 1.4;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      white-space: normal;
+      word-break: break-word;
+      max-width: 92vw;
+      text-align: center;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--error); }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    .spinner-dark {
+      border-color: rgba(13,27,62,0.25);
+      border-top-color: var(--navy);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #scan-btn.scanning { animation: pulse-scan 1.4s ease-in-out infinite; }
+    @keyframes pulse-scan { 0%, 100% { opacity: 1; } 50% { opacity: 0.72; } }
+
+    /* Scan page */
+    .scan-body { flex: 1; padding: 20px 16px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+    .placeholder-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .placeholder-card h3 { color: var(--navy); margin-bottom: 8px; }
+    .placeholder-card p { color: var(--muted); font-size: 0.88rem; }
+
+    .asset-id-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: space-between; }
+    .asset-id-row h3 { color: var(--navy); font-size: 1.05rem; }
+
+    .status-pill {
+      display: inline-block;
+      font-size: 0.66rem;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .status-pill.active { background: #e6f4ea; color: var(--success); }
+    .status-pill.faulty { background: #fbeaea; color: var(--error); }
+    .status-pill.maintenance { background: #eaf1fb; color: var(--maintenance); }
+    .status-pill.replaced { background: #eceff3; color: var(--muted); }
+
+    .prefix-reference {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      margin-top: 14px;
+    }
+    .prefix-chip {
+      background: #eef1f8;
+      color: var(--navy);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════ STAFF LOGIN / SIGNUP PAGE ══════════════════════ -->
+<div class="page active" id="page-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="icon">⚡</div>
+        <h2>Solar Asset Tracker</h2>
+        <p>Staff Portal</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</div>
+        <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</div>
+      </div>
+
+      <!-- SIGN IN FORM -->
+      <div class="auth-form active" id="form-signin">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="signin-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="signin-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button class="btn btn-accent" id="signin-btn" onclick="doSignIn()">Sign In</button>
+        <p class="error-msg" id="signin-error"></p>
+      </div>
+
+      <!-- SIGN UP FORM -->
+      <div class="auth-form" id="form-signup">
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="signup-name" placeholder="Jane Doe" autocomplete="name" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="signup-email" placeholder="username_edit@solar.com or username_view@solar.com" autocomplete="email" />
+          <p style="font-size:0.72rem;color:var(--muted);margin-top:5px;line-height:1.4;">
+            Use <strong>_edit@solar.com</strong> for editing access (admin approval required) or
+            <strong>_view@solar.com</strong> for view-only access (instant).
+          </p>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="signup-password" placeholder="At least 6 characters" autocomplete="new-password" />
+        </div>
+        <button class="btn btn-accent" id="signup-btn" onclick="doSignUp()">Create Account</button>
+        <p class="error-msg" id="signup-error"></p>
+        <p class="info-msg" id="signup-info"></p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ STAFF: SCAN PAGE ══════════════════════ -->
+<div class="page" id="page-scan">
+  <header>
+    <div>
+      <h1>Solar Asset Tracker</h1>
+      <span id="user-email-display"></span>
+    </div>
+    <div class="header-actions">
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="scan-body">
+
+    <!-- Idle / scan-or-manual-entry state -->
+    <div id="scan-idle-view">
+      <div class="placeholder-card">
+        <h3>📡 Scan a Component</h3>
+        <p>Tap the button below, then hold your phone near the NFC tag.</p>
+        <button class="btn btn-accent" id="scan-btn" onclick="startScan()" style="margin-top:16px;">Tap to Scan NFC Tag</button>
+      </div>
+
+      <div class="field" style="margin-top:18px;">
+        <label>Or enter Component ID manually</label>
+        <input type="text" id="manual-id-input" placeholder="e.g. PNL-007" autocomplete="off" />
+      </div>
+      <button class="btn btn-outline" onclick="loadManualId()">Load Component</button>
+
+      <div class="prefix-reference" id="prefix-reference"></div>
+
+      <p style="font-size:0.74rem;color:var(--muted);text-align:center;margin-top:6px;line-height:1.4;">
+        NFC scanning works on Android + Chrome only. On other devices, use manual entry.
+      </p>
+    </div>
+
+    <!-- Result state (locked view / edit view / register form / errors) — built dynamically -->
+    <div id="scan-result-view" style="display:none;"></div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // ─────────────────────────────────────────────────
+  //  SUPABASE CONFIG
+  // ─────────────────────────────────────────────────
+  const SUPABASE_URL = 'https://qmagisntwjnelmgwghmu.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtYWdpc250d2puZWxtZ3dnaG11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODIzMzUsImV4cCI6MjA5NzI1ODMzNX0.4sgL_0yxEODZ30eTxZIXk38mwwp83sowMVqILJARnII';
+
+  // ─────────────────────────────────────────────────
+  //  STATE
+  // ─────────────────────────────────────────────────
+  let currentUser = null;         // { access_token, email, id, role, full_name }
+  let currentRecord = null;       // { tableKey, row } — currently viewed/edited existing component
+  let pendingRegistration = null; // { tableKey, componentId, idLocked, typeLocked, isFromTag }
+  let pendingPromptCtx = null;
+
+  const scanState = {
+    ndefReader: null,
+    acceptReads: false,
+    abortController: null,
+    timeoutId: null
+  };
+
+  // ─────────────────────────────────────────────────
+  //  COMPONENT TABLE CONFIG
+  // ─────────────────────────────────────────────────
+  const STATUS_OPTIONS = ['Active', 'Faulty', 'Under Maintenance', 'Replaced'];
+  const LOCATION_OPTIONS = ['Storehouse 1', 'Storehouse 2', 'Dispatched to Site'];
+
+  const TABLES = [
+    { key: 'panels', label: 'Panels', prefix: 'PNL', extra: [
+        { id: 'wattage', label: 'Wattage (W)', type: 'number' },
+        { id: 'voltage_voc', label: 'Voltage Voc (V)', type: 'number' }
+    ]},
+    { key: 'inverters', label: 'Inverters', prefix: 'INV', extra: [
+        { id: 'capacity_kw', label: 'Capacity (kW)', type: 'number' },
+        { id: 'phase', label: 'Phase', type: 'select', options: ['Single', 'Three'] },
+        { id: 'mppt_voltage_range', label: 'MPPT Voltage Range', type: 'text' },
+        { id: 'efficiency_pct', label: 'Efficiency (%)', type: 'number' }
+    ]},
+    { key: 'batteries', label: 'Batteries', prefix: 'BAT', extra: [
+        { id: 'capacity_ah', label: 'Capacity (Ah)', type: 'number' },
+        { id: 'nominal_voltage', label: 'Nominal Voltage (V)', type: 'number' },
+        { id: 'chemistry', label: 'Chemistry', type: 'text' }
+    ]},
+    { key: 'meters', label: 'Meters', prefix: 'MTR', extra: [
+        { id: 'meter_type', label: 'Meter Type', type: 'select', options: ['Smart', 'Net'] },
+        { id: 'serial_number', label: 'Serial Number', type: 'text' }
+    ]},
+    { key: 'mppt_controllers', label: 'MPPT Controllers', prefix: 'MPPT', extra: [
+        { id: 'rated_current_a', label: 'Rated Current (A)', type: 'number' },
+        { id: 'voltage_range', label: 'Voltage Range', type: 'text' }
+    ]},
+    { key: 'combiner_boxes', label: 'Combiner Boxes', prefix: 'CMB', extra: [
+        { id: 'num_strings', label: 'Number of Strings', type: 'number' },
+        { id: 'fuse_rating_a', label: 'Fuse Rating (A)', type: 'number' }
+    ]},
+    { key: 'breakers', label: 'Breakers', prefix: 'BRK', extra: [
+        { id: 'breaker_type', label: 'Breaker Type', type: 'select', options: ['AC', 'DC'] },
+        { id: 'rated_current_a', label: 'Rated Current (A)', type: 'number' },
+        { id: 'pole_count', label: 'Pole Count', type: 'number' }
+    ]},
+    { key: 'spds', label: 'SPDs', prefix: 'SPD', extra: [
+        { id: 'spd_type', label: 'SPD Type', type: 'select', options: ['Type 1', 'Type 2', 'Type 3'] },
+        { id: 'voltage_rating', label: 'Voltage Rating (V)', type: 'number' }
+    ]},
+    { key: 'rods', label: 'Earthing Rods', prefix: 'ROD', extra: [
+        { id: 'material', label: 'Material', type: 'text' },
+        { id: 'length_m', label: 'Length (m)', type: 'number' }
+    ]}
+  ];
+
+  const PREFIX_TO_TABLE = {};
+  TABLES.forEach(t => { PREFIX_TO_TABLE[t.prefix] = t.key; });
+
+  function getTableConfig(key) { return TABLES.find(t => t.key === key); }
+
+  function getFields(tableKey) {
+    const cfg = getTableConfig(tableKey);
+    return [
+      { id: 'manufacturer', label: 'Manufacturer', type: 'text' },
+      { id: 'model', label: 'Model', type: 'text' },
+      ...cfg.extra,
+      { id: 'location', label: 'Location', type: 'select', options: LOCATION_OPTIONS },
+      { id: 'status', label: 'Status', type: 'select', options: STATUS_OPTIONS },
+      { id: 'notes', label: 'Notes', type: 'textarea' }
+    ];
+  }
+
+  function statusClass(status) {
+    if (status === 'Active') return 'active';
+    if (status === 'Faulty') return 'faulty';
+    if (status === 'Under Maintenance') return 'maintenance';
+    if (status === 'Replaced') return 'replaced';
+    return '';
+  }
+
+  function extractPrefix(id) {
+    const match = /^([A-Za-z]+)/.exec(id || '');
+    return match ? match[1].toUpperCase() : null;
+  }
+
+  // ─────────────────────────────────────────────────
+  //  HELPERS
+  // ─────────────────────────────────────────────────
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+  }
+
+  function toast(msg, type = 'info', duration = null) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    clearTimeout(t._timer);
+    const dur = duration ?? (type === 'error' ? 6000 : 3500);
+    t._timer = setTimeout(() => t.classList.remove('show'), dur);
+  }
+
+  function setBtn(id, loading, idleLabel) {
+    const b = document.getElementById(id);
+    if (!b) return;
+    b.disabled = loading;
+    b.innerHTML = loading ? `<span class="spinner spinner-dark"></span>${idleLabel}` : idleLabel;
+  }
+
+  function apiHeaders(token) {
+    return {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': `Bearer ${token}`,
+      'Content-Type':  'application/json'
+    };
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str === null || str === undefined ? '' : str;
+    return div.innerHTML;
+  }
+
+  // ─────────────────────────────────────────────────
+  //  AUTH TABS
+  // ─────────────────────────────────────────────────
+  function switchTab(which) {
+    document.getElementById('tab-signin').classList.toggle('active', which === 'signin');
+    document.getElementById('tab-signup').classList.toggle('active', which === 'signup');
+    document.getElementById('form-signin').classList.toggle('active', which === 'signin');
+    document.getElementById('form-signup').classList.toggle('active', which === 'signup');
+  }
+
+  // ─────────────────────────────────────────────────
+  //  SIGN UP
+  // ─────────────────────────────────────────────────
+  async function doSignUp() {
+    const name  = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const pass  = document.getElementById('signup-password').value;
+    const errEl = document.getElementById('signup-error');
+    const infoEl = document.getElementById('signup-info');
+    errEl.style.display = 'none';
+    infoEl.style.display = 'none';
+
+    if (!name || !email || !pass) {
+      errEl.textContent = 'Please fill in all fields.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (pass.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const COMPANY_DOMAIN = 'solar.com';
+    const editPattern = new RegExp(`^[^@\\s]+_edit@${COMPANY_DOMAIN}$`, 'i');
+    const viewPattern = new RegExp(`^[^@\\s]+_view@${COMPANY_DOMAIN}$`, 'i');
+
+    let signupKind;
+    if (editPattern.test(email)) {
+      signupKind = 'edit';
+    } else if (viewPattern.test(email)) {
+      signupKind = 'view';
+    } else {
+      errEl.innerHTML = `Email must follow the format:<br>
+        <strong>username_edit@${COMPANY_DOMAIN}</strong> (requires admin approval) or<br>
+        <strong>username_view@${COMPANY_DOMAIN}</strong> (instant access)`;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    setBtn('signup-btn', true, 'Create Account');
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error_description || data.msg || data.message || 'Sign up failed.');
+      }
+
+      const newUserId = data.id || (data.user && data.user.id);
+      if (!newUserId) throw new Error('Unexpected response from server.');
+
+      const token = data.access_token || SUPABASE_KEY;
+
+      const profileBody = signupKind === 'edit'
+        ? { id: newUserId, email: email, full_name: name, role: 'pending', requested_role: 'staff_edit' }
+        : { id: newUserId, email: email, full_name: name, role: 'staff_view', requested_role: 'staff_view' };
+
+      const profileRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(profileBody)
+      });
+
+      if (!profileRes.ok) {
+        const perr = await profileRes.json().catch(() => ({}));
+        throw new Error(perr.message || 'Account created, but profile setup failed. Contact admin.');
+      }
+
+      infoEl.textContent = signupKind === 'edit'
+        ? 'Account created! Please wait for admin approval before signing in.'
+        : 'Account created! You can sign in right away.';
+      infoEl.style.display = 'block';
+      document.getElementById('signup-name').value = '';
+      document.getElementById('signup-email').value = '';
+      document.getElementById('signup-password').value = '';
+
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    } finally {
+      setBtn('signup-btn', false, 'Create Account');
+    }
+  }
+
+  // ─────────────────────────────────────────────────
+  //  SIGN IN (staff-only — rejects admin accounts)
+  // ─────────────────────────────────────────────────
+  async function doSignIn() {
+    const email = document.getElementById('signin-email').value.trim();
+    const pass  = document.getElementById('signin-password').value;
+    const errEl = document.getElementById('signin-error');
+    errEl.style.display = 'none';
+
+    if (!email || !pass) {
+      errEl.textContent = 'Please enter your email and password.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    setBtn('signin-btn', true, 'Sign In');
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error_description || data.msg || data.message || 'Login failed.');
+      }
+
+      const accessToken = data.access_token;
+      const userId = data.user.id;
+
+      const profileRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}&select=*`,
+        { headers: apiHeaders(accessToken) }
+      );
+      const profiles = await profileRes.json();
+      const profile = profiles[0];
+
+      if (!profile) {
+        throw new Error('No profile found for this account. Contact an admin.');
+      }
+      if (profile.disabled) {
+        throw new Error('This account has been disabled. Contact an admin.');
+      }
+      if (profile.role === 'pending') {
+        throw new Error('Your account is awaiting admin approval. Please check back later.');
+      }
+      if (profile.role === 'admin') {
+        throw new Error('This is an admin account. Please use the Admin Portal to sign in.');
+      }
+
+      try {
+        const loginPatch = { last_login_at: new Date().toISOString() };
+        if (!profile.first_login_at) loginPatch.first_login_at = loginPatch.last_login_at;
+        await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${userId}`, {
+          method: 'PATCH',
+          headers: { ...apiHeaders(accessToken), 'Prefer': 'return=minimal' },
+          body: JSON.stringify(loginPatch)
+        });
+        Object.assign(profile, loginPatch);
+      } catch (e) {}
+
+      currentUser = {
+        access_token: accessToken,
+        email: data.user.email,
+        id: userId,
+        role: profile.role,
+        full_name: profile.full_name
+      };
+
+      document.getElementById('user-email-display').textContent =
+        `${currentUser.full_name || currentUser.email} (${currentUser.role})`;
+
+      showPage('scan');
+      returnToIdle();
+
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    } finally {
+      setBtn('signin-btn', false, 'Sign In');
+    }
+  }
+
+  // ─────────────────────────────────────────────────
+  //  LOGOUT
+  // ─────────────────────────────────────────────────
+  function doLogout() {
+    currentUser = null;
+    currentRecord = null;
+    pendingRegistration = null;
+    pendingPromptCtx = null;
+    stopScanSession();
+
+    document.getElementById('signin-email').value = '';
+    document.getElementById('signin-password').value = '';
+    switchTab('signin');
+    showPage('login');
+  }
+
+  // ─────────────────────────────────────────────────
+  //  NFC SCANNING
+  // ─────────────────────────────────────────────────
+  async function startScan() {
+    if (!('NDEFReader' in window)) {
+      toast("Web NFC isn't supported on this browser/device. Use manual entry below, or open this page in Chrome for Android.", 'error');
+      return;
+    }
+    if (!window.isSecureContext) {
+      toast('NFC needs a secure (HTTPS) connection. This page must be hosted online — opening the file directly on your phone disables NFC.', 'error');
+      return;
+    }
+    if (window.top !== window.self) {
+      toast("NFC scanning isn't allowed inside an embedded frame. Open this page directly in Chrome, not inside another app or preview.", 'error');
+      return;
+    }
+
+    // Second tap cancels an active scan session
+    if (scanState.acceptReads) {
+      stopScanSession();
+      toast('Scan cancelled.', 'info');
+      return;
+    }
+
+    scanState.abortController = new AbortController();
+
+    try {
+      if (!scanState.ndefReader) {
+        scanState.ndefReader = new NDEFReader();
+        scanState.ndefReader.onreading = handleTagReading;
+        scanState.ndefReader.onreadingerror = () => {
+          stopScanSession();
+          toast('Failed to read tag. Try again.', 'error');
+        };
+      }
+
+      await scanState.ndefReader.scan({ signal: scanState.abortController.signal });
+
+      scanState.acceptReads = true;
+      setScanButtonState('scanning');
+
+      clearTimeout(scanState.timeoutId);
+      scanState.timeoutId = setTimeout(() => {
+        if (scanState.acceptReads) {
+          stopScanSession();
+          toast('No tag detected within 25 seconds. Hold the tag steady on the back of your phone and try again.', 'info');
+        }
+      }, 25000);
+
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      toast(describeNfcError(err), 'error');
+    }
+  }
+
+  function stopScanSession() {
+    clearTimeout(scanState.timeoutId);
+    scanState.timeoutId = null;
+    scanState.acceptReads = false;
+    if (scanState.abortController) {
+      scanState.abortController.abort();
+      scanState.abortController = null;
+    }
+    setScanButtonState('idle');
+  }
+
+  function setScanButtonState(state) {
+    const b = document.getElementById('scan-btn');
+    if (!b) return;
+    if (state === 'scanning') {
+      b.classList.add('scanning');
+      b.innerHTML = '<span class="spinner spinner-dark"></span>Tap your phone on the tag… (tap to cancel)';
+    } else {
+      b.classList.remove('scanning');
+      b.innerHTML = 'Tap to Scan NFC Tag';
+    }
+  }
+
+  function describeNfcError(err) {
+    const name = err && err.name;
+    if (name === 'NotAllowedError')
+      return "NFC permission was denied. Allow the permission when Chrome prompts you, and check that NFC is turned on in your phone's system settings.";
+    if (name === 'NotSupportedError')
+      return "This device doesn't support NFC, or NFC is turned off in system settings.";
+    if (name === 'NotReadableError')
+      return 'Could not start the NFC reader. Try toggling NFC off and on in system settings, then retry.';
+    if (name === 'SecurityError')
+      return 'NFC was blocked for security reasons — this page must be served over HTTPS and opened directly, not embedded.';
+    return `NFC error: ${err && err.message ? err.message : 'Unknown error.'}`;
+  }
+
+  function handleTagReading(event) {
+    if (!scanState.acceptReads) return;
+    stopScanSession(); // one read per scan session
+
+    let tagId = null;
+    for (const record of event.message.records) {
+      if (record.recordType === 'text') {
+        const decoder = new TextDecoder(record.encoding || 'utf-8');
+        tagId = decoder.decode(record.data).trim();
+        break;
+      }
+    }
+
+    if (tagId) {
+      processScannedId(tagId, true);
+    } else {
+      processBlankTag(true);
+    }
+  }
+
+  function loadManualId() {
+    const id = document.getElementById('manual-id-input').value.trim();
+    if (!id) {
+      toast('Enter a Component ID first.', 'error');
+      return;
+    }
+    processScannedId(id, false);
+  }
+
+  // ─────────────────────────────────────────────────
+  //  ROUTING — scanned/typed ID to the right table
+  // ─────────────────────────────────────────────────
+  async function processScannedId(id, isFromTag) {
+    const prefix = extractPrefix(id);
+    const tableKey = PREFIX_TO_TABLE[prefix];
+
+    if (!tableKey) {
+      // Unrecognized prefix — keep the prompt for this case only,
+      // since the ID format is genuinely unexpected
+      if (currentUser.role === 'staff_view') {
+        showNotRegisteredView(id, null);
+      } else {
+        showRegisterPrompt({
+          tableKey: null, componentId: '', idLocked: false,
+          typeLocked: false, isFromTag, reason: 'unrecognized', scannedId: id
+        });
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/${tableKey}?component_id=eq.${encodeURIComponent(id)}&select=*`,
+        { headers: apiHeaders(currentUser.access_token) }
+      );
+      const rows = await res.json();
+
+      if (rows.length > 0) {
+        // ── CASE 1: Already registered → show details ──
+        showLockedView(tableKey, rows[0]);
+      } else if (currentUser.role === 'staff_view') {
+        showNotRegisteredView(id, tableKey);
+      } else {
+        // ── CASE 2: Known prefix, not in DB → register form directly ──
+        showRegisterForm({
+          tableKey,
+          componentId: id,
+          idLocked: true,
+          typeLocked: true,
+          isFromTag,
+          reason: 'unregistered'
+        });
+      }
+    } catch (e) {
+      toast('Error looking up component: ' + e.message, 'error');
+    }
+  }
+
+  async function processBlankTag(isFromTag) {
+    if (currentUser.role === 'staff_view') {
+      showNotRegisteredView(null, null);
+      return;
+    }
+    // ── CASE 3: Blank/empty tag → register form directly ──
+    showRegisterForm({
+      tableKey: null,
+      componentId: '',
+      idLocked: false,
+      typeLocked: false,
+      isFromTag,
+      reason: 'blank'
+    });
+  }
+
+  // ─────────────────────────────────────────────────
+  //  FIELD RENDERING
+  // ─────────────────────────────────────────────────
+  function buildFieldsHtml(tableKey, row, readonly) {
+    const fields = getFields(tableKey);
+    return fields.map(f => {
+      const value = row[f.id] !== null && row[f.id] !== undefined ? row[f.id] : '';
+      let inputHtml = '';
+
+      if (readonly) {
+        inputHtml = `<input type="text" value="${escapeHtml(value)}" readonly>`;
+      } else if (f.type === 'textarea') {
+        inputHtml = `<textarea id="cf-${f.id}" rows="3">${escapeHtml(value)}</textarea>`;
+      } else if (f.type === 'select') {
+        const opts = f.options.map(o =>
+          `<option value="${escapeHtml(o)}" ${value === o ? 'selected' : ''}>${escapeHtml(o)}</option>`
+        ).join('');
+        inputHtml = `<select id="cf-${f.id}"><option value="">— Select —</option>${opts}</select>`;
+      } else if (f.type === 'date') {
+        inputHtml = `<input type="date" id="cf-${f.id}" value="${escapeHtml(value)}">`;
+      } else if (f.type === 'number') {
+        inputHtml = `<input type="number" step="any" id="cf-${f.id}" value="${escapeHtml(value)}">`;
+      } else {
+        inputHtml = `<input type="text" id="cf-${f.id}" value="${escapeHtml(value)}">`;
+      }
+
+      return `<div class="field"><label>${escapeHtml(f.label)}</label>${inputHtml}</div>`;
+    }).join('');
+  }
+
+  function showResult(html) {
+    document.getElementById('scan-idle-view').style.display = 'none';
+    const resultEl = document.getElementById('scan-result-view');
+    resultEl.style.display = 'block';
+    resultEl.innerHTML = html;
+  }
+
+  // ─────────────────────────────────────────────────
+  //  LOCKED VIEW (read-only, existing record)
+  // ─────────────────────────────────────────────────
+  function showLockedView(tableKey, row) {
+    currentRecord = { tableKey, row };
+    const cfg = getTableConfig(tableKey);
+    const canEdit = currentUser.role === 'staff_edit';
+
+    const html = `
+      <button class="btn btn-outline" onclick="returnToIdle()">← Scan Another</button>
+      <div class="placeholder-card" style="text-align:left;">
+        <div class="asset-id-row" style="margin-bottom:6px;">
+          <h3>${escapeHtml(row.component_id)}</h3>
+          ${row.status ? `<span class="status-pill ${statusClass(row.status)}">${escapeHtml(row.status)}</span>` : ''}
+        </div>
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:14px;">${escapeHtml(cfg.label)} · View Only</p>
+        ${buildFieldsHtml(tableKey, row, true)}
+        ${canEdit ? `<button class="btn btn-accent" onclick="unlockEdit()">Edit</button>` : ''}
+      </div>
+    `;
+    showResult(html);
+  }
+
+  function unlockEdit() {
+    if (!currentRecord) return;
+    const { tableKey, row } = currentRecord;
+    const cfg = getTableConfig(tableKey);
+
+    const html = `
+      <button class="btn btn-outline" onclick="returnToIdle()">← Scan Another</button>
+      <div class="placeholder-card" style="text-align:left;">
+        <div class="asset-id-row" style="margin-bottom:6px;">
+          <h3>${escapeHtml(row.component_id)}</h3>
+        </div>
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:14px;">${escapeHtml(cfg.label)} · Editing</p>
+        ${buildFieldsHtml(tableKey, row, false)}
+        <button class="btn btn-accent" id="save-edit-btn" onclick="saveEdit()">Save Changes</button>
+        <button class="btn btn-outline" onclick="cancelEdit()">Cancel</button>
+      </div>
+    `;
+    document.getElementById('scan-result-view').innerHTML = html;
+  }
+
+  function cancelEdit() {
+    if (!currentRecord) return;
+    showLockedView(currentRecord.tableKey, currentRecord.row);
+  }
+
+  async function saveEdit() {
+    if (!currentRecord) return;
+    const { tableKey, row } = currentRecord;
+    const fields = getFields(tableKey);
+    const payload = {};
+
+    fields.forEach(f => {
+      const el = document.getElementById('cf-' + f.id);
+      if (!el) return;
+      const raw = el.value;
+      if (f.type === 'number') payload[f.id] = raw === '' ? null : parseFloat(raw);
+      else if (f.type === 'date') payload[f.id] = raw === '' ? null : raw;
+      else { const t = raw.trim(); payload[f.id] = t === '' ? null : t; }
+    });
+
+    payload.updated_at = new Date().toISOString();
+    payload.updated_by = currentUser.id;
+
+    setBtn('save-edit-btn', true, 'Save Changes');
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/${tableKey}?component_id=eq.${encodeURIComponent(row.component_id)}`,
+        {
+          method: 'PATCH',
+          headers: { ...apiHeaders(currentUser.access_token), 'Prefer': 'return=minimal' },
+          body: JSON.stringify(payload)
+        }
+      );
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to save changes.');
+      }
+
+      const mergedRow = { ...row, ...payload };
+      logComponentHistory(tableKey, row.component_id, mergedRow);
+
+      toast('Saved successfully!', 'success');
+      showLockedView(tableKey, mergedRow);
+
+    } catch (e) {
+      toast('Error: ' + e.message, 'error');
+    } finally {
+      setBtn('save-edit-btn', false, 'Save Changes');
+    }
+  }
+
+  // Append-only audit snapshot — same function as admin portal
+  function logComponentHistory(tableKey, componentId, snapshotRow) {
+    fetch(`${SUPABASE_URL}/rest/v1/component_history`, {
+      method: 'POST',
+      headers: { ...apiHeaders(currentUser.access_token), 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        table_name: tableKey,
+        component_id: componentId,
+        snapshot: snapshotRow,
+        edited_by: currentUser.id,
+        edited_by_name: currentUser.full_name || currentUser.email
+      })
+    }).catch(() => {});
+  }
+
+  // ─────────────────────────────────────────────────
+  //  REGISTER NEW COMPONENT
+  // ─────────────────────────────────────────────────
+  function showRegisterForm(ctx) {
+    pendingRegistration = { ...ctx };
+
+    let headerHtml = '';
+    if (ctx.typeLocked) {
+      const cfg = getTableConfig(ctx.tableKey);
+      headerHtml = `
+        <div class="field"><label>Component Type</label>
+          <input type="text" value="${escapeHtml(cfg.label)}" readonly></div>
+        <div class="field"><label>Component ID</label>
+          <input type="text" value="${escapeHtml(ctx.componentId)}" readonly></div>
+      `;
+    } else {
+      const typeOpts = TABLES.map(t =>
+        `<option value="${t.key}">${escapeHtml(t.label)}</option>`
+      ).join('');
+      headerHtml = `
+        <div class="field">
+          <label>Component Type</label>
+          <select id="reg-type-select" onchange="onRegisterTypeChange()">
+            <option value="">— Select Type —</option>
+            ${typeOpts}
+          </select>
+        </div>
+        <div class="field">
+          <label>Component ID</label>
+          <input type="text" id="reg-id-input" placeholder="Select a type first" value="">
+        </div>
+      `;
+    }
+
+    const saveLabel = ctx.isFromTag ? 'Save & Write to Tag' : 'Save Component';
+
+    const html = `
+      <button class="btn btn-outline" onclick="returnToIdle()">← Scan Another</button>
+      <div class="placeholder-card" style="text-align:left;">
+        <h3 style="margin-bottom:6px;">Register New Component</h3>
+        <p style="color:var(--muted);font-size:0.85rem;margin-bottom:14px;">
+          ${ctx.isFromTag
+            ? "This NFC tag isn't registered yet. Fill in the details below."
+            : 'Fill in the details to register this component.'}
+        </p>
+        ${headerHtml}
+        <div id="register-fields-container"></div>
+        <button class="btn btn-accent" id="register-save-btn" onclick="saveRegistration()">
+          ${saveLabel}
+        </button>
+      </div>
+    `;
+    showResult(html);
+
+    if (ctx.typeLocked) {
+      renderRegisterFields(ctx.tableKey);
+    }
+  }
+
+  function renderRegisterFields(tableKey) {
+    const defaults = { status: 'Active', location: 'Storehouse 1' };
+    document.getElementById('register-fields-container').innerHTML =
+      buildFieldsHtml(tableKey, defaults, false);
+  }
+
+  async function onRegisterTypeChange() {
+    const tableKey = document.getElementById('reg-type-select').value;
+    pendingRegistration.tableKey = tableKey || null;
+
+    if (!tableKey) {
+      document.getElementById('register-fields-container').innerHTML = '';
+      document.getElementById('reg-id-input').value = '';
+      return;
+    }
+
+    renderRegisterFields(tableKey);
+    const suggested = await suggestNextId(tableKey);
+    document.getElementById('reg-id-input').value = suggested;
+  }
+
+  async function suggestNextId(tableKey) {
+    const cfg = getTableConfig(tableKey);
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/${tableKey}?select=component_id&order=component_id.desc&limit=50`,
+        { headers: apiHeaders(currentUser.access_token) }
+      );
+      const rows = await res.json();
+      let maxNum = 0;
+      const re = new RegExp(`^${cfg.prefix}-?(\\d+)$`, 'i');
+      rows.forEach(r => {
+        const m = re.exec(r.component_id || '');
+        if (m) maxNum = Math.max(maxNum, parseInt(m[1], 10));
+      });
+      const next = String(maxNum + 1).padStart(3, '0');
+      return `${cfg.prefix}-${next}`;
+    } catch (e) {
+      return `${cfg.prefix}-001`;
+    }
+  }
+
+  async function saveRegistration() {
+    if (!pendingRegistration) return;
+    let { tableKey, isFromTag, idLocked, componentId } = pendingRegistration;
+
+    if (!idLocked) {
+      tableKey  = document.getElementById('reg-type-select').value;
+      componentId = document.getElementById('reg-id-input').value.trim();
+
+      if (!tableKey)    { toast('Please select a component type.', 'error'); return; }
+      if (!componentId) { toast('Please enter a Component ID.', 'error'); return; }
+
+      const cfg = getTableConfig(tableKey);
+      const prefix = extractPrefix(componentId);
+      if (prefix !== cfg.prefix) {
+        toast(`Component ID should start with "${cfg.prefix}" for ${cfg.label}.`, 'error');
+        return;
+      }
+    }
+
+    const fields = getFields(tableKey);
+    const payload = { component_id: componentId };
+
+    fields.forEach(f => {
+      const el = document.getElementById('cf-' + f.id);
+      if (!el) return;
+      const raw = el.value;
+      if (f.type === 'number') payload[f.id] = raw === '' ? null : parseFloat(raw);
+      else if (f.type === 'date') payload[f.id] = raw === '' ? null : raw;
+      else { const t = raw.trim(); payload[f.id] = t === '' ? null : t; }
+    });
+
+    payload.updated_at = new Date().toISOString();
+    payload.updated_by = currentUser.id;
+
+    const saveLabel = isFromTag ? 'Save & Write to Tag' : 'Save Component';
+    setBtn('register-save-btn', true, 'Saving...');
+
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${tableKey}`, {
+        method: 'POST',
+        headers: { ...apiHeaders(currentUser.access_token), 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        const msg = (err.message || '').toLowerCase();
+        if (err.code === '23505' || msg.includes('duplicate')) {
+          throw new Error('This Component ID already exists. Please choose another.');
+        }
+        throw new Error(err.message || 'Failed to register component.');
+      }
+
+      toast('Component registered successfully!', 'success');
+
+      // Tag write is best-effort — DB save is already done at this point
+      if (isFromTag && 'NDEFReader' in window && scanState.ndefReader) {
+        writeToTagWithTimeout(componentId);
+      }
+
+      showLockedView(tableKey, payload);
+
+    } catch (e) {
+      toast('Error: ' + e.message, 'error');
+    } finally {
+      setBtn('register-save-btn', false, saveLabel);
+    }
+  }
+
+  function writeToTagWithTimeout(componentId) {
+    toast('Hold the tag against your phone again to finish writing…', 'info');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    scanState.ndefReader.write(
+      { records: [{ recordType: 'text', data: componentId }] },
+      { signal: controller.signal }
+    ).then(() => {
+      clearTimeout(timeoutId);
+      toast('Tag written successfully ✅', 'success');
+    }).catch(e => {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        toast("Tag write timed out — the component is saved, but the tag wasn't updated. You can try writing to it again later.", 'error');
+      } else {
+        toast('Saved, but writing to the tag failed: ' + e.message, 'error');
+      }
+    });
+  }
+
+  // ─────────────────────────────────────────────────
+  //  NOT REGISTERED (staff_view dead-end)
+  // ─────────────────────────────────────────────────
+  function showNotRegisteredView(id, tableKey) {
+    const label = tableKey ? getTableConfig(tableKey).label : null;
+    const idLine = id
+      ? `<p style="margin-top:10px;font-weight:600;color:var(--navy);">${escapeHtml(id)}</p>`
+      : '';
+    const html = `
+      <button class="btn btn-outline" onclick="returnToIdle()">← Scan Another</button>
+      <div class="placeholder-card">
+        <h3>Not Registered</h3>
+        <p>This ${label ? label.toLowerCase() + ' tag' : 'tag'} hasn't been registered in the system yet.</p>
+        ${idLine}
+        <p style="margin-top:10px;">Contact a staff member with edit access to register it.</p>
+      </div>
+    `;
+    showResult(html);
+  }
+
+  // ─────────────────────────────────────────────────
+  //  UNRECOGNIZED PREFIX PROMPT (staff_edit only — unknown ID format)
+  // ─────────────────────────────────────────────────
+  function showRegisterPrompt(ctx) {
+    pendingPromptCtx = ctx;
+    const prefixList = TABLES.map(t => t.prefix).join(', ');
+
+    const html = `
+      <button class="btn btn-outline" onclick="returnToIdle()">← Scan Another</button>
+      <div class="placeholder-card">
+        <h3>Unrecognized Tag Format</h3>
+        <p>The ID <strong>${escapeHtml(ctx.scannedId || '')}</strong> doesn't match any known
+           component type prefix (${prefixList}).</p>
+        <p style="margin-top:10px;color:var(--muted);font-size:0.85rem;">
+          You can still register it manually below.
+        </p>
+        <button class="btn btn-accent" style="margin-top:14px;" onclick="confirmRegisterFromPrompt()">
+          Register Component
+        </button>
+      </div>
+    `;
+    showResult(html);
+  }
+
+  function confirmRegisterFromPrompt() {
+    if (!pendingPromptCtx) return;
+    const ctx = pendingPromptCtx;
+    pendingPromptCtx = null;
+    showRegisterForm(ctx);
+  }
+
+  // ─────────────────────────────────────────────────
+  //  RETURN TO IDLE
+  // ─────────────────────────────────────────────────
+  function returnToIdle() {
+    currentRecord = null;
+    pendingRegistration = null;
+    pendingPromptCtx = null;
+    stopScanSession();
+
+    document.getElementById('scan-result-view').style.display = 'none';
+    document.getElementById('scan-result-view').innerHTML = '';
+    document.getElementById('scan-idle-view').style.display = 'block';
+    document.getElementById('manual-id-input').value = '';
+  }
+
+  // ─────────────────────────────────────────────────
+  //  PREFIX REFERENCE CHIPS
+  // ─────────────────────────────────────────────────
+  function renderPrefixReference() {
+    const el = document.getElementById('prefix-reference');
+    if (!el) return;
+    el.innerHTML = TABLES.map(t => `<span class="prefix-chip">${escapeHtml(t.prefix)}</span>`).join('');
+  }
+  renderPrefixReference();
+
+  // ─────────────────────────────────────────────────
+  //  ENTER KEY SHORTCUTS
+  // ─────────────────────────────────────────────────
+  document.getElementById('signin-password')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') doSignIn(); });
+  document.getElementById('signup-password')
+    .addEventListener('keydown', e => { if (e.key === 'Enter') doSignUp(); });
+</script>
+</body>
+</html>
